@@ -106,7 +106,21 @@ class CubeGLSurfaceView @JvmOverloads constructor(
     }
 }
 
-class CubeRenderer(private val context: Context, rotationX: Float, rotationY: Float) : GLSurfaceView.Renderer {
+/**
+ * Renderer for a 3D cube using OpenGL ES.
+ *
+ * This class handles the setup and drawing of a 3D cube, including rotation based on user input.
+ *
+ * @property mvpMatrix Combined Model-View-Projection matrix. Transforms 3D coordinates into 2D screen coordinates.
+ * @property projectionMatrix Defines how 3D scene is projected onto 2D screen. Sets up view frustum, field of view, and clipping planes.
+ * @property viewMatrix Represents the camera's position and orientation in 3D space.
+ * @property rotationMatrix Handles rotation of the cube based on user interaction.
+ */
+class CubeRenderer(
+    private val context: Context,
+    rotationX: Float,
+    rotationY: Float,
+) : GLSurfaceView.Renderer {
     private val mvpMatrix = FloatArray(16)
     private val projectionMatrix = FloatArray(16)
     private val viewMatrix = FloatArray(16)
@@ -154,6 +168,19 @@ class CubeRenderer(private val context: Context, rotationX: Float, rotationY: Fl
     }
 }
 
+/**
+ * Represents a 3D cube with texture mapping using OpenGL ES.
+ *
+ * This class encapsulates the geometry, texture coordinates, and rendering logic for a textured cube.
+ *
+ * @property vertexBuffer Vertex Buffer Object (VBO) containing cube's vertex coordinates (x, y, z).
+ * @property texCoordBuffer Buffer containing texture coordinates (u, v) for each vertex.
+ * @property indexBuffer Element Buffer Object (EBO) defining how vertices are connected to form faces.
+ * @property program Reference to the compiled and linked OpenGL shader program.
+ * @property textureId OpenGL texture handle for the loaded texture.
+ * @property vertices Array of vertex coordinates defining the cube's geometry in 3D space.
+ * @property indices Array of indices defining how vertices are connected to form the cube's faces.
+ */
 class Cube(context: Context) {
     private var vertexBuffer: FloatBuffer
     private var texCoordBuffer: FloatBuffer
@@ -259,15 +286,15 @@ class Cube(context: Context) {
     )
 
     init {
-        val bb = ByteBuffer.allocateDirect(vertices.size * 4)
-        bb.order(ByteOrder.nativeOrder())
-        vertexBuffer = bb.asFloatBuffer()
+        val vertexByteBuffer = ByteBuffer.allocateDirect(vertices.size * 4)
+        vertexByteBuffer.order(ByteOrder.nativeOrder())
+        vertexBuffer = vertexByteBuffer.asFloatBuffer()
         vertexBuffer.put(vertices)
         vertexBuffer.position(0)
 
-        val tb = ByteBuffer.allocateDirect(texCoords.size * 4)
-        tb.order(ByteOrder.nativeOrder())
-        texCoordBuffer = tb.asFloatBuffer()
+        val texCoordByteBuffer = ByteBuffer.allocateDirect(texCoords.size * 4)
+        texCoordByteBuffer.order(ByteOrder.nativeOrder())
+        texCoordBuffer = texCoordByteBuffer.asFloatBuffer()
         texCoordBuffer.put(texCoords)
         texCoordBuffer.position(0)
 
@@ -279,6 +306,7 @@ class Cube(context: Context) {
         val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode)
 
         program = GLES20.glCreateProgram()
+
         GLES20.glAttachShader(program, vertexShader)
         GLES20.glAttachShader(program, fragmentShader)
         GLES20.glLinkProgram(program)
